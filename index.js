@@ -12,7 +12,7 @@ const STORE = {
 
 function generateItemElement(item, itemIndex, template) {
   return `
-    <li class="js-item-index-element" data-item-index="${itemIndex}">
+    <li class="js-item-index-element ${(STORE.hideChecked && item.checked) ? 'hidden' : ''}" data-item-index="${itemIndex}">
       <span class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</span>
       <div class="shopping-item-controls">
         <button class="shopping-item-toggle js-item-toggle">
@@ -58,8 +58,6 @@ function handleNewItemSubmit() {
   });
 }
 
-
-
 function toggleHideChecked() {
   console.log('Toggling hideChecked property on STORE');
   STORE.hideChecked = !STORE.hideChecked;
@@ -78,11 +76,6 @@ function handleHideCheckedClicked() {
     renderShoppingList();
   });
 }
-
-
-
-
-
 
 function toggleCheckedForListItem(itemIndex) {
   console.log('Toggling checked property for item at index ' + itemIndex);
