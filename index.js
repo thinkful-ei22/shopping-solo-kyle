@@ -1,11 +1,14 @@
 'use strict';
 
-const STORE = [
-  {name: 'apples', checked: false},
-  {name: 'oranges', checked: false},
-  {name: 'milk', checked: true},
-  {name: 'bread', checked: false}
-];
+const STORE = {
+  items: [
+    {name: 'apples', checked: false},
+    {name: 'oranges', checked: false},
+    {name: 'milk', checked: true},
+    {name: 'bread', checked: false}
+  ],
+  hideChecked: false,
+};
 
 function generateItemElement(item, itemIndex, template) {
   return `
@@ -24,7 +27,7 @@ function generateItemElement(item, itemIndex, template) {
 
 function generateShoppingItemsString(shoppingList) {
   console.log('Generating shopping list element');
-  const items = shoppingList.map((item, index) => generateItemElement(item, index));
+  const items = shoppingList.items.map((item, index) => generateItemElement(item, index));
   return items.join('');
 }
 
@@ -40,7 +43,7 @@ function renderShoppingList() {
 
 function addItemToShoppingList(itemName) {
   console.log(`Adding "${itemName}" to shopping list`);
-  STORE.push({name: itemName, checked: false});
+  STORE.items.push({name: itemName, checked: false});
 }
 
 function handleNewItemSubmit() {
@@ -55,9 +58,35 @@ function handleNewItemSubmit() {
   });
 }
 
+
+
+function toggleHideChecked() {
+  console.log('Toggling hideChecked property on STORE');
+  STORE.hideChecked = !STORE.hideChecked;
+}
+
+function handleHideCheckedClicked() {
+  $('.js-hide-checked-toggle').on('change', event => {
+    console.log(event);
+    console.log('`handleHideChecked` ran');
+    // toggle hideChecked
+    console.log(STORE.hideChecked);
+    toggleHideChecked();
+    console.log(STORE.hideChecked);
+
+    //rerender dom
+    renderShoppingList();
+  });
+}
+
+
+
+
+
+
 function toggleCheckedForListItem(itemIndex) {
   console.log('Toggling checked property for item at index ' + itemIndex);
-  STORE[itemIndex].checked = !STORE[itemIndex].checked;
+  STORE.items[itemIndex].checked = !STORE.items[itemIndex].checked;
 }
 
 function getItemIndexFromElement(item) {
@@ -78,7 +107,7 @@ function handleItemCheckClicked() {
 }
 
 function deleteListItem(itemIndex) {
-  STORE.splice(itemIndex,1);
+  STORE.items.splice(itemIndex,1);
 }
 
 function handleDeleteItemClicked() {
@@ -95,6 +124,7 @@ function handleShoppingList() {
   handleNewItemSubmit();
   handleItemCheckClicked();
   handleDeleteItemClicked();
+  handleHideCheckedClicked();
 
 }
 
