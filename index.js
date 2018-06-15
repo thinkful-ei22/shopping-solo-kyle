@@ -67,9 +67,6 @@ function handleNewItemSubmit() {
   });
 }
 
-
-
-
 function updateSearchTerm(newSearchTerm) {
   console.log('Updating searchTerm to be ' + newSearchTerm);
   STORE.searchTerm = newSearchTerm;
@@ -85,9 +82,6 @@ function handleSearchInput() {
     renderShoppingList();
   });
 }
-
-
-
 
 function toggleHideChecked() {
   console.log('Toggling hideChecked property on STORE');
