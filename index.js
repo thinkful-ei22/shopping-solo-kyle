@@ -1,14 +1,5 @@
 'use strict';
 
-// `STORE` is responsible for storing the underlying data
-// that our app needs to keep track of in order to work.
-//
-// for a shopping list, our data model is pretty simple.
-// we just have an array of shopping list items. each one
-// is an object with a `name` and a `checked` property that
-// indicates if it's checked off or not.
-// we're pre-adding items to the shopping list so there's
-// something to see when the page first loads.
 const STORE = [
   {name: 'apples', checked: false},
   {name: 'oranges', checked: false},
@@ -33,7 +24,6 @@ function generateItemElement(item, itemIndex, template) {
 
 function generateShoppingItemsString(shoppingList) {
   console.log('Generating shopping list element');
-
   const items = shoppingList.map((item, index) => generateItemElement(item, index));
   return items.join('');
 }
@@ -92,8 +82,6 @@ function deleteListItem(itemIndex) {
 }
 
 function handleDeleteItemClicked() {
-  // this function will be responsible for when users want to delete a shopping list
-  // item
   $('.js-shopping-list').on('click', '.js-item-delete', event => {
     console.log('`handleDeleteItemClicked` ran');
     const itemIndex = getItemIndexFromElement(event.currentTarget);
@@ -102,12 +90,6 @@ function handleDeleteItemClicked() {
   });
 }
 
-
-
-// this function will be our callback when the page loads. it's responsible for
-// initially rendering the shopping list, and activating our individual functions
-// that handle new item submission and user clicks on the "check" and "delete" buttons
-// for individual shopping list items.
 function handleShoppingList() {
   renderShoppingList();
   handleNewItemSubmit();
