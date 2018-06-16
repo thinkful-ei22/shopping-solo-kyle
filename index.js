@@ -22,7 +22,7 @@ const STORE = {
 
 // ********** VIEW HELPER(S) **********
 function isHidden(item) {
-  if ((STORE.hideChecked && item.checked) || ((STORE.searchTerm !== '') && !item.name.includes(STORE.searchTerm))) {
+  if ((STORE.hideChecked && item.checked) || ((STORE.searchTerm !== '') && !item.name.toLowerCase().includes(STORE.searchTerm))) {
     return 'hidden';
   }
   return '';
@@ -145,7 +145,7 @@ function handleSearchInput() {
   $('#js-shopping-list-form').on('keyup', '.js-shopping-list-entry', function(event) {
     // console.log('`handleSearchInput` ran');
 
-    const newSearchTerm = $('.js-shopping-list-entry').val();
+    const newSearchTerm = $('.js-shopping-list-entry').val().toLowerCase();
 
     updateSearchTerm(newSearchTerm);
     renderShoppingList();
