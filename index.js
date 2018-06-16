@@ -1,5 +1,8 @@
 'use strict';
 
+// **********************************************
+// ********** DATA STORE WITH DEFAULTS **********
+// **********************************************
 const STORE = {
   items: [
     {name: 'apples', checked: false, updating: false},
@@ -11,6 +14,13 @@ const STORE = {
   searchTerm: '',
 };
 
+
+// ************************************
+// ********** VIEW TEMPLATES **********
+// ************************************
+
+
+// ********** VIEW HELPER(S) **********
 function isHiddenDecider(item) {
   if ((STORE.hideChecked && item.checked) || ((STORE.searchTerm !== '') && !item.name.includes(STORE.searchTerm))) {
     return 'hidden';
@@ -18,10 +28,11 @@ function isHiddenDecider(item) {
   return '';
 }
 
+// ********** NAME DISPLAY HTML PARTIAL **********
 function displayNameOrEditForm(item) {
   if (item.updating) {
     return `
-      <span class="shopping-item js-item-update-form">
+      <div class="shopping-item js-item-update-form">
         <form id="js-shopping-list-entry">
           <label for="shopping-list-entry-update"></label>
           <input type="text" name="shopping-list-entry-update" title="update item name" class="js-shopping-list-entry-update" value="${item.name}" autofocus>
@@ -32,13 +43,14 @@ function displayNameOrEditForm(item) {
             <span class="button-label">cancel</span>
           </button>
         </form>
-      </span>
+      </div>
       `;
   }
-  return `<span class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</span>`;
+  return `<a href="#"><div class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</div></a>`;
 }
 
-function generateItemElement(item, itemIndex, template) {
+// ********* NEW ITEM HTML **********
+function generateItemElement(item, itemIndex) {
   return `
     <li class="js-item-index-element ${isHiddenDecider(item)}" data-item-index="${itemIndex}">
       ${displayNameOrEditForm(item)}
@@ -50,34 +62,63 @@ function generateItemElement(item, itemIndex, template) {
             <span class="button-label">delete</span>
         </button>
       </div>
-    </li>`;
+    </li>
+    `;
 }
 
+
+// ****************************
+// ********** RENDER **********
+// ****************************
+
+
+// ********** RENDER HELPER(S) **********
 function generateShoppingItemsString(shoppingList) {
-  console.log('Generating shopping list element');
+  // console.log('Generating shopping list element');
 
   const items = shoppingList.items.map((item, index) => generateItemElement(item, index));
   return items.join('');
 }
 
-
+// ********** RENDER LIST **********
 function renderShoppingList() {
-  console.log('`renderShoppingList` ran');
+  // console.log('`renderShoppingList` ran');
 
   const shoppingListItemsString = generateShoppingItemsString(STORE);
   $('.js-shopping-list').html(shoppingListItemsString);
 }
 
-function addItemToShoppingList(itemName) {
-  console.log(`Adding "${itemName}" to shopping list`);
 
-  STORE.items.push({name: itemName, checked: false});
+// **************************************
+// ********** SHARED HELPER(S) **********
+// **************************************
+
+
+function getItemIndexFromElement(item) {
+  const itemIndexString = $(item)
+    .closest('.js-item-index-element')
+    .attr('data-item-index');
+  return parseInt(itemIndexString, 10);
 }
 
+
+// *******************************
+// ********** NEW ITEMS **********
+// *******************************
+
+
+// ********** NEW ITEM HELPER **********
+function addItemToShoppingList(itemName) {
+  // console.log(`Adding "${itemName}" to shopping list`);
+
+  STORE.items.unshift({name: itemName, checked: false});
+}
+
+// ********** ADD NEW ITEMS **********
 function handleNewItemSubmit() {
   $('#js-shopping-list-form').submit(function(event) {
     event.preventDefault();
-    console.log('`handleNewItemSubmit` ran');
+    // console.log('`handleNewItemSubmit` ran');
 
     const newItemName = $('.js-shopping-list-entry').val();
     $('.js-shopping-list-entry').val('');
@@ -87,15 +128,22 @@ function handleNewItemSubmit() {
   });
 }
 
+// ****************************
+// ********** SEARCH **********
+// ****************************
+
+
+// ********** SEARCH HELPER **********
 function updateSearchTerm(newSearchTerm) {
-  console.log('Updating searchTerm to be ' + newSearchTerm);
+  // console.log('Updating searchTerm to be ' + newSearchTerm);
 
   STORE.searchTerm = newSearchTerm;
 }
 
+// ********** SEARCH **********
 function handleSearchInput() {
   $('#js-shopping-list-form').on('keyup', '.js-shopping-list-entry', function(event) {
-    console.log('`handleSearchInput` ran');
+    // console.log('`handleSearchInput` ran');
 
     const newSearchTerm = $('.js-shopping-list-entry').val();
 
@@ -104,15 +152,59 @@ function handleSearchInput() {
   });
 }
 
+
+// **********************************
+// ********** HIDE CHECKED **********
+// **********************************
+
+
+// ********** HIDE ITEMS HELPER **********
+function toggleHideChecked() {
+  // console.log('Toggling hideChecked property on STORE');
+
+  STORE.hideChecked = !STORE.hideChecked;
+}
+
+// ********** HIDE CHECKED ITEMS **********
+function handleHideCheckedClicked() {
+  $('.js-hide-checked-toggle').on('change', event => {
+    // console.log('`handleHideChecked` ran');
+
+    toggleHideChecked();
+    renderShoppingList();
+  });
+}
+
+
+// *******************************************
+// ********** UPDATE ITEM HELPER(S) **********
+// *******************************************
+
+
+// ********** SET UPDATING STATUS **********
 function toggleEditingForListItem(index) {
-  console.log(`Setting state of 'updating' for ${STORE.items[index].name} to '${!STORE.items[index].updating}'`);
+  // console.log(`Setting state of 'updating' for ${STORE.items[index].name} to '${!STORE.items[index].updating}'`);
 
   STORE.items[index].updating = !STORE.items[index].updating;
 }
 
+// ********** PERSIST NEW NAME **********
+function updateItemName(index, name) {
+  // console.log(`Changing ${STORE.items[index].name} to ${name}`)
+
+  STORE.items[index].name = name;
+}
+
+
+// **********************************
+// ********** UPDATE ITEMS **********
+// **********************************
+
+
+// ********** ENABLE UPDATE FORM **********
 function handleItemNameClicked() {
   $('.js-shopping-list').on('click', '.js-shopping-item',event => {
-    console.log('`handleItemNameClicked` ran');
+    // console.log('`handleItemNameClicked` ran');
     
     const itemIndex = getItemIndexFromElement(event.currentTarget);
     const item = STORE.items[itemIndex];
@@ -124,15 +216,11 @@ function handleItemNameClicked() {
   });
 }
 
-function updateItemName(index, name) {
-  console.log(`Changing ${STORE.items[index].name} to ${name}`)
-  STORE.items[index].name = name;
-}
-
+// ********** UPDATE ITEM **********
 function handleItemUpdateClick() {
   $('.js-shopping-list').on('click', '.js-item-update',event => {
-    console.log('`handleItemUpdateClick` ran');
     event.preventDefault();
+    // console.log('`handleItemUpdateClick` ran');
 
     const itemIndex = getItemIndexFromElement(event.currentTarget);
     const newItemName = $('.js-shopping-list-entry-update').val();
@@ -143,10 +231,11 @@ function handleItemUpdateClick() {
   });
 }
 
+// ********** CANCEL UPDATE **********
 function handleItemUpdateCancelClick() {
   $('.js-shopping-list').on('click', '.js-item-cancel',event => {
-    console.log('`handleItemUpdateCancelClick` ran');
     event.preventDefault();
+    // console.log('`handleItemUpdateCancelClick` ran');
 
     const itemIndex = getItemIndexFromElement(event.currentTarget);
     
@@ -155,37 +244,23 @@ function handleItemUpdateCancelClick() {
   });
 }
 
-function toggleHideChecked() {
-  console.log('Toggling hideChecked property on STORE');
 
-  STORE.hideChecked = !STORE.hideChecked;
-}
+// ************************************
+// ********** CHECKING ITEMS **********
+// ************************************
 
-function handleHideCheckedClicked() {
-  $('.js-hide-checked-toggle').on('change', event => {
-    console.log('`handleHideChecked` ran');
 
-    toggleHideChecked();
-    renderShoppingList();
-  });
-}
-
+// ********** CHECK ITEM HELPER(S) **********
 function toggleCheckedForListItem(itemIndex) {
-  console.log('Toggling checked property for item at index ' + itemIndex);
+  // console.log('Toggling checked property for item at index ' + itemIndex);
 
   STORE.items[itemIndex].checked = !STORE.items[itemIndex].checked;
 }
 
-function getItemIndexFromElement(item) {
-  const itemIndexString = $(item)
-    .closest('.js-item-index-element')
-    .attr('data-item-index');
-  return parseInt(itemIndexString, 10);
-}
-
+// ********** CHECK ITEM **********
 function handleItemCheckClicked() {
   $('.js-shopping-list').on('click', '.js-item-toggle', event => {
-    console.log('`handleItemCheckClicked` ran');
+    // console.log('`handleItemCheckClicked` ran');
 
     const itemIndex = getItemIndexFromElement(event.currentTarget);
 
@@ -194,13 +269,21 @@ function handleItemCheckClicked() {
   });
 }
 
+
+// **********************************
+// ********** DELETE ITEMS **********
+// **********************************
+
+
+// ********** DELETE HELPER(S) **********
 function deleteListItem(itemIndex) {
   STORE.items.splice(itemIndex,1);
 }
 
+// ********** DELETE ITEM **********
 function handleDeleteItemClicked() {
   $('.js-shopping-list').on('click', '.js-item-delete', event => {
-    console.log('`handleDeleteItemClicked` ran');
+    // console.log('`handleDeleteItemClicked` ran');
 
     const itemIndex = getItemIndexFromElement(event.currentTarget);
 
@@ -209,6 +292,10 @@ function handleDeleteItemClicked() {
   });
 }
 
+
+// **************************
+// ********** MAIN **********
+// **************************
 function handleShoppingList() {
   renderShoppingList();
   handleSearchInput();
