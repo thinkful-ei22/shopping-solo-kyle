@@ -21,7 +21,7 @@ const STORE = {
 
 
 // ********** VIEW HELPER(S) **********
-function isHiddenDecider(item) {
+function isHidden(item) {
   if ((STORE.hideChecked && item.checked) || ((STORE.searchTerm !== '') && !item.name.includes(STORE.searchTerm))) {
     return 'hidden';
   }
@@ -33,9 +33,9 @@ function displayNameOrEditForm(item) {
   if (item.updating) {
     return `
       <div class="shopping-item js-item-update-form">
-        <form id="js-shopping-list-entry">
+        <form id="js-shopping-list-entry-update">
           <label for="shopping-list-entry-update"></label>
-          <input type="text" name="shopping-list-entry-update" title="update item name" class="js-shopping-list-entry-update" value="${item.name}" autofocus>
+          <input type="text" name="shopping-list-entry-update" title="update item name" class="js-shopping-list-entry-update" value="${item.name}">
           <button class="shopping-item-update js-item-update">
             <span class="button-label">update</span>
           </button>
@@ -49,10 +49,10 @@ function displayNameOrEditForm(item) {
   return `<a href="#"><div class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</div></a>`;
 }
 
-// ********* NEW ITEM HTML **********
+// ********* ITEM HTML **********
 function generateItemElement(item, itemIndex) {
   return `
-    <li class="js-item-index-element ${isHiddenDecider(item)}" data-item-index="${itemIndex}">
+    <li class="js-item-index-element ${isHidden(item)}" data-item-index="${itemIndex}">
       ${displayNameOrEditForm(item)}
       <div class="shopping-item-controls">
         <button class="shopping-item-toggle js-item-toggle">
@@ -76,7 +76,7 @@ function generateItemElement(item, itemIndex) {
 function generateShoppingItemsString(shoppingList) {
   // console.log('Generating shopping list element');
 
-  const items = shoppingList.items.map((item, index) => generateItemElement(item, index));
+  const items = shoppingList.map((item, index) => generateItemElement(item, index));
   return items.join('');
 }
 
@@ -84,7 +84,7 @@ function generateShoppingItemsString(shoppingList) {
 function renderShoppingList() {
   // console.log('`renderShoppingList` ran');
 
-  const shoppingListItemsString = generateShoppingItemsString(STORE);
+  const shoppingListItemsString = generateShoppingItemsString(STORE.items);
   $('.js-shopping-list').html(shoppingListItemsString);
 }
 
@@ -188,6 +188,13 @@ function toggleEditingForListItem(index) {
   STORE.items[index].updating = !STORE.items[index].updating;
 }
 
+// ********** UNSET UPDATING ON ALL ITEMS **********
+function resetEditingForListItems() {
+  // console.log('Reseting the state of `updating` for all list items to `false`');
+
+  STORE.items.forEach(item => item.updating = false);
+}
+
 // ********** PERSIST NEW NAME **********
 function updateItemName(index, name) {
   // console.log(`Changing ${STORE.items[index].name} to ${name}`)
@@ -203,8 +210,8 @@ function updateItemName(index, name) {
 
 // ********** ENABLE UPDATE FORM **********
 function handleItemNameClicked() {
-  $('.js-shopping-list').on('click', '.js-shopping-item',event => {
-    // console.log('`handleItemNameClicked` ran');
+  $('.js-shopping-list').on('click', '.js-shopping-item', event => {
+    console.log('`handleItemNameClicked` ran');
     
     const itemIndex = getItemIndexFromElement(event.currentTarget);
     const item = STORE.items[itemIndex];
@@ -216,9 +223,30 @@ function handleItemNameClicked() {
   });
 }
 
+// ********** REMOVE FORM IF OUTSIDE CLICKS **********
+function handleClickOutsideItemUpdate() {
+  $('body').on('click', function(event) {
+    console.log('`handleClickOutsideItemUpdate` ran');
+
+    if (($('#js-shopping-list-entry-update').length) && (!event.target.closest('#js-shopping-list-entry-update') && !event.target.closest('.js-shopping-item')) ) {
+      // console.log('I did it!');
+
+      const itemIndex = $('#js-shopping-list-entry-update').closest('li').attr('data-item-index');
+      // console.log(itemIndex);
+      const item = STORE.items[itemIndex];
+    
+      if (item.updating) {
+        // toggleEditingForListItem(itemIndex);
+        resetEditingForListItems();
+      }
+      renderShoppingList();
+    }
+  });
+}
+
 // ********** UPDATE ITEM **********
 function handleItemUpdateClick() {
-  $('.js-shopping-list').on('click', '.js-item-update',event => {
+  $('.js-shopping-list').on('click', '.js-item-update', event => {
     event.preventDefault();
     // console.log('`handleItemUpdateClick` ran');
 
@@ -233,7 +261,7 @@ function handleItemUpdateClick() {
 
 // ********** CANCEL UPDATE **********
 function handleItemUpdateCancelClick() {
-  $('.js-shopping-list').on('click', '.js-item-cancel',event => {
+  $('.js-shopping-list').on('click', '.js-item-cancel', event => {
     event.preventDefault();
     // console.log('`handleItemUpdateCancelClick` ran');
 
@@ -302,6 +330,7 @@ function handleShoppingList() {
   handleNewItemSubmit();
   handleItemNameClicked();
   handleItemUpdateClick();
+  handleClickOutsideItemUpdate();
   handleItemUpdateCancelClick();
   handleItemCheckClicked();
   handleDeleteItemClicked();
