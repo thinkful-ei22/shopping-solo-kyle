@@ -2,10 +2,10 @@
 
 const STORE = {
   items: [
-    {name: 'apples', checked: false},
-    {name: 'oranges', checked: false},
-    {name: 'milk', checked: true},
-    {name: 'bread', checked: false}
+    {name: 'apples', checked: false, updating: false},
+    {name: 'oranges', checked: false, updating: false},
+    {name: 'milk', checked: true, updating: false},
+    {name: 'bread', checked: false, updating: false}
   ],
   hideChecked: false,
   searchTerm: '',
@@ -18,10 +18,30 @@ function isHiddenDecider(item) {
   return '';
 }
 
+function displayNameOrEditForm(item) {
+  if (item.updating) {
+    return `
+      <span class="shopping-item js-item-update-form">
+        <form id="js-shopping-list-entry">
+          <label for="shopping-list-entry-update"></label>
+          <input type="text" name="shopping-list-entry-update" title="update item name" class="js-shopping-list-entry-update" value="${item.name}" autofocus>
+          <button class="shopping-item-update js-item-update">
+            <span class="button-label">update</span>
+          </button>
+          <button type="button" class="shopping-item-cancel js-item-cancel">
+            <span class="button-label">cancel</span>
+          </button>
+        </form>
+      </span>
+      `;
+  }
+  return `<span class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</span>`;
+}
+
 function generateItemElement(item, itemIndex, template) {
   return `
     <li class="js-item-index-element ${isHiddenDecider(item)}" data-item-index="${itemIndex}">
-      <span class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</span>
+      ${displayNameOrEditForm(item)}
       <div class="shopping-item-controls">
         <button class="shopping-item-toggle js-item-toggle">
             <span class="button-label">check</span>
@@ -69,6 +89,7 @@ function handleNewItemSubmit() {
 
 function updateSearchTerm(newSearchTerm) {
   console.log('Updating searchTerm to be ' + newSearchTerm);
+
   STORE.searchTerm = newSearchTerm;
 }
 
@@ -79,6 +100,57 @@ function handleSearchInput() {
     const newSearchTerm = $('.js-shopping-list-entry').val();
 
     updateSearchTerm(newSearchTerm);
+    renderShoppingList();
+  });
+}
+
+function toggleEditingForListItem(index) {
+  console.log(`Setting state of 'updating' for ${STORE.items[index].name} to '${!STORE.items[index].updating}'`);
+
+  STORE.items[index].updating = !STORE.items[index].updating;
+}
+
+function handleItemNameClicked() {
+  $('.js-shopping-list').on('click', '.js-shopping-item',event => {
+    console.log('`handleItemNameClicked` ran');
+    
+    const itemIndex = getItemIndexFromElement(event.currentTarget);
+    const item = STORE.items[itemIndex];
+
+    if (!item.updating) {
+      toggleEditingForListItem(itemIndex);
+      renderShoppingList();
+    }
+  });
+}
+
+function updateItemName(index, name) {
+  console.log(`Changing ${STORE.items[index].name} to ${name}`)
+  STORE.items[index].name = name;
+}
+
+function handleItemUpdateClick() {
+  $('.js-shopping-list').on('click', '.js-item-update',event => {
+    console.log('`handleItemUpdateClick` ran');
+    event.preventDefault();
+
+    const itemIndex = getItemIndexFromElement(event.currentTarget);
+    const newItemName = $('.js-shopping-list-entry-update').val();
+
+    updateItemName(itemIndex, newItemName);
+    toggleEditingForListItem(itemIndex);
+    renderShoppingList();
+  });
+}
+
+function handleItemUpdateCancelClick() {
+  $('.js-shopping-list').on('click', '.js-item-cancel',event => {
+    console.log('`handleItemUpdateCancelClick` ran');
+    event.preventDefault();
+
+    const itemIndex = getItemIndexFromElement(event.currentTarget);
+    
+    toggleEditingForListItem(itemIndex);
     renderShoppingList();
   });
 }
@@ -141,6 +213,9 @@ function handleShoppingList() {
   renderShoppingList();
   handleSearchInput();
   handleNewItemSubmit();
+  handleItemNameClicked();
+  handleItemUpdateClick();
+  handleItemUpdateCancelClick();
   handleItemCheckClicked();
   handleDeleteItemClicked();
   handleHideCheckedClicked();
